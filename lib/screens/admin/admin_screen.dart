@@ -1,89 +1,56 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import 'add_event_screen.dart';
+import '../../theme/app_colors.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       appBar: AppBar(
-
         title: const Text(
           "Admin Dashboard",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
 
       floatingActionButton: FloatingActionButton(
-
         backgroundColor: AppColors.primary,
 
         onPressed: () {
-
-          Navigator.push(
-
-            context,
-
-            MaterialPageRoute(
-
-              builder: (_) =>
-              const AddEventScreen(),
-            ),
-          );
+          Navigator.pushNamed(context, '/add-event');
         },
 
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
 
       body: SingleChildScrollView(
-
         padding: const EdgeInsets.all(20),
 
         child: Column(
-
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             /// Welcome Card
             Container(
-
               width: double.infinity,
 
               padding: const EdgeInsets.all(25),
 
               decoration: BoxDecoration(
-
                 gradient: const LinearGradient(
-
-                  colors: [
-                    AppColors.primary,
-                    AppColors.secondary,
-                  ],
+                  colors: [AppColors.primary, AppColors.secondary],
                 ),
 
                 borderRadius: BorderRadius.circular(30),
               ),
 
               child: const Column(
-
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   Text(
-
                     "Welcome Admin 👋",
 
                     style: TextStyle(
@@ -96,13 +63,9 @@ class AdminScreen extends StatelessWidget {
                   SizedBox(height: 10),
 
                   Text(
-
                     "Manage all events and users easily",
 
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
@@ -112,7 +75,6 @@ class AdminScreen extends StatelessWidget {
 
             /// Statistics
             const Text(
-
               "Statistics",
 
               style: TextStyle(
@@ -125,9 +87,7 @@ class AdminScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             Row(
-
               children: [
-
                 Expanded(
                   child: buildStatCard(
                     title: "Events",
@@ -151,9 +111,7 @@ class AdminScreen extends StatelessWidget {
             const SizedBox(height: 15),
 
             Row(
-
               children: [
-
                 Expanded(
                   child: buildStatCard(
                     title: "Tickets",
@@ -178,7 +136,6 @@ class AdminScreen extends StatelessWidget {
 
             /// Recent Events
             const Text(
-
               "Recent Events",
 
               style: TextStyle(
@@ -214,53 +171,39 @@ class AdminScreen extends StatelessWidget {
   }
 
   Widget buildStatCard({
-
     required String title,
 
     required String value,
 
     required IconData icon,
-
   }) {
-
     return Container(
-
       padding: const EdgeInsets.all(20),
 
       decoration: BoxDecoration(
-
         color: Colors.white,
 
         borderRadius: BorderRadius.circular(25),
       ),
 
       child: Column(
-
         children: [
-
           Container(
-
             width: 60,
             height: 60,
 
             decoration: BoxDecoration(
-
               color: AppColors.primary.withOpacity(0.1),
 
               borderRadius: BorderRadius.circular(18),
             ),
 
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 32,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: 32),
           ),
 
           const SizedBox(height: 15),
 
           Text(
-
             value,
 
             style: const TextStyle(
@@ -272,78 +215,53 @@ class AdminScreen extends StatelessWidget {
 
           const SizedBox(height: 5),
 
-          Text(
-
-            title,
-
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 15,
-            ),
-          ),
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 15)),
         ],
       ),
     );
   }
 
   Widget buildEventCard({
-
     required String title,
 
     required String location,
 
     required String date,
-
   }) {
-
     return Container(
-
       margin: const EdgeInsets.only(bottom: 15),
 
       padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-
         color: Colors.white,
 
         borderRadius: BorderRadius.circular(25),
       ),
 
       child: Row(
-
         children: [
-
           Container(
-
             width: 65,
             height: 65,
 
             decoration: BoxDecoration(
-
               color: AppColors.primary,
 
               borderRadius: BorderRadius.circular(18),
             ),
 
-            child: const Icon(
-              Icons.event,
-              color: Colors.white,
-              size: 32,
-            ),
+            child: const Icon(Icons.event, color: Colors.white, size: 32),
           ),
 
           const SizedBox(width: 15),
 
           Expanded(
-
             child: Column(
-
               crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
-
                 Text(
-
                   title,
 
                   style: const TextStyle(
@@ -355,27 +273,18 @@ class AdminScreen extends StatelessWidget {
                 const SizedBox(height: 6),
 
                 Text(
-
                   "$location • $date",
 
-                  style: const TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
           ),
 
           IconButton(
+            onPressed: () {},
 
-            onPressed: () {
-
-            },
-
-            icon: const Icon(
-              Icons.delete_outline,
-              color: Colors.red,
-            ),
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
           ),
         ],
       ),

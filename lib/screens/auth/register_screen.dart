@@ -1,104 +1,74 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 
-import '../services/auth_service.dart';
+import '../../services/auth_service.dart';
 
-import 'login_screen.dart';
+import '../../models/user_model.dart';
+import '../../widgets/role_card.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() =>
-      _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState
-    extends State<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController nameController = TextEditingController();
 
-  final TextEditingController nameController =
-  TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  final TextEditingController emailController =
-  TextEditingController();
-
-  final TextEditingController passwordController =
-  TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   final TextEditingController confirmPasswordController =
-  TextEditingController();
+      TextEditingController();
 
   bool isPasswordHidden = true;
 
   bool isConfirmPasswordHidden = true;
 
+  UserRole selectedRole = UserRole.attendee;
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       body: SafeArea(
-
         child: SingleChildScrollView(
-
           padding: const EdgeInsets.all(25),
 
           child: Column(
-
-            crossAxisAlignment:
-            CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-
               const SizedBox(height: 30),
 
               /// Back Button
               IconButton(
-
                 onPressed: () {
-
                   Navigator.pop(context);
-
                 },
 
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                ),
+                icon: const Icon(Icons.arrow_back_ios),
               ),
 
               const SizedBox(height: 20),
 
               /// Logo
               Center(
-
                 child: Container(
-
                   width: 110,
                   height: 110,
 
                   decoration: BoxDecoration(
-
                     gradient: const LinearGradient(
-
-                      colors: [
-                        AppColors.primary,
-                        AppColors.secondary,
-                      ],
+                      colors: [AppColors.primary, AppColors.secondary],
                     ),
 
-                    borderRadius:
-                    BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(30),
                   ),
 
-                  child: const Icon(
-
-                    Icons.event,
-
-                    color: Colors.white,
-
-                    size: 60,
-                  ),
+                  child: const Icon(Icons.event, color: Colors.white, size: 60),
                 ),
               ),
 
@@ -106,7 +76,6 @@ class _RegisterScreenState
 
               /// Header
               const Text(
-
                 "Create Account 🚀",
 
                 style: TextStyle(
@@ -119,20 +88,15 @@ class _RegisterScreenState
               const SizedBox(height: 10),
 
               const Text(
-
                 "Join Eventify and explore events",
 
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
 
               const SizedBox(height: 35),
 
               /// Full Name
               buildTextField(
-
                 controller: nameController,
 
                 hint: "Full Name",
@@ -144,7 +108,6 @@ class _RegisterScreenState
 
               /// Email
               buildTextField(
-
                 controller: emailController,
 
                 hint: "Email Address",
@@ -156,7 +119,6 @@ class _RegisterScreenState
 
               /// Password
               buildPasswordField(
-
                 controller: passwordController,
 
                 hint: "Password",
@@ -164,12 +126,8 @@ class _RegisterScreenState
                 isHidden: isPasswordHidden,
 
                 onTap: () {
-
                   setState(() {
-
-                    isPasswordHidden =
-                    !isPasswordHidden;
-
+                    isPasswordHidden = !isPasswordHidden;
                   });
                 },
               ),
@@ -178,22 +136,55 @@ class _RegisterScreenState
 
               /// Confirm Password
               buildPasswordField(
-
-                controller:
-                confirmPasswordController,
+                controller: confirmPasswordController,
 
                 hint: "Confirm Password",
 
-                isHidden:
-                isConfirmPasswordHidden,
+                isHidden: isConfirmPasswordHidden,
 
                 onTap: () {
-
                   setState(() {
+                    isConfirmPasswordHidden = !isConfirmPasswordHidden;
+                  });
+                },
+              ),
 
-                    isConfirmPasswordHidden =
-                    !isConfirmPasswordHidden;
+              const SizedBox(height: 25),
 
+              const Text(
+                "Account Type",
+
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              RoleCard(
+                icon: Icons.event,
+                title: "Attendee",
+                subtitle: "Browse and buy event tickets",
+                isSelected: selectedRole == UserRole.attendee,
+                onTap: () {
+                  setState(() {
+                    selectedRole = UserRole.attendee;
+                  });
+                },
+              ),
+
+              const SizedBox(height: 15),
+
+              RoleCard(
+                icon: Icons.add_business,
+                title: "Organizer",
+                subtitle: "Create and manage events",
+                isSelected: selectedRole == UserRole.organizer,
+                onTap: () {
+                  setState(() {
+                    selectedRole = UserRole.organizer;
                   });
                 },
               ),
@@ -202,79 +193,47 @@ class _RegisterScreenState
 
               /// Register Button
               SizedBox(
-
                 width: double.infinity,
 
                 height: 60,
 
                 child: ElevatedButton(
-
                   style: ElevatedButton.styleFrom(
-
-                    backgroundColor:
-                    AppColors.primary,
+                    backgroundColor: AppColors.primary,
 
                     shape: RoundedRectangleBorder(
-
-                      borderRadius:
-                      BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
 
                   onPressed: () {
-
-                    if(passwordController.text !=
-                        confirmPasswordController
-                            .text){
-
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(
-
-                        const SnackBar(
-
-                          content: Text(
-                            "Passwords do not match",
-                          ),
-                        ),
+                    if (passwordController.text !=
+                        confirmPasswordController.text) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Passwords do not match")),
                       );
 
                       return;
                     }
 
                     AuthService.register(
+                      email: emailController.text,
 
-                      email:
-                      emailController.text,
+                      password: passwordController.text,
 
-                      password:
-                      passwordController.text,
+                      role: selectedRole,
                     );
 
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-
+                    ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-
-                        content: Text(
-                          "Account Created Successfully",
-                        ),
+                        content: Text("Account Created Successfully"),
                       ),
                     );
 
-                    Navigator.pushReplacement(
-
-                      context,
-
-                      MaterialPageRoute(
-
-                        builder: (_) =>
-                        const LoginScreen(),
-                      ),
-                    );
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
 
                   child: const Text(
-
                     "Create Account",
 
                     style: TextStyle(
@@ -290,34 +249,17 @@ class _RegisterScreenState
 
               /// Login
               Row(
-
-                mainAxisAlignment:
-                MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
 
                 children: [
-
-                  const Text(
-                    "Already have an account?",
-                  ),
+                  const Text("Already have an account?"),
 
                   TextButton(
-
                     onPressed: () {
-
-                      Navigator.pushReplacement(
-
-                        context,
-
-                        MaterialPageRoute(
-
-                          builder: (_) =>
-                          const LoginScreen(),
-                        ),
-                      );
+                      Navigator.pushReplacementNamed(context, '/login');
                     },
 
                     child: const Text(
-
                       "Login",
 
                       style: TextStyle(
@@ -336,34 +278,25 @@ class _RegisterScreenState
   }
 
   Widget buildTextField({
-
     required TextEditingController controller,
 
     required String hint,
 
     required IconData icon,
-
   }) {
-
     return TextField(
-
       controller: controller,
 
       decoration: InputDecoration(
-
         filled: true,
 
         fillColor: Colors.white,
 
         hintText: hint,
 
-        prefixIcon: Icon(
-          icon,
-          color: AppColors.primary,
-        ),
+        prefixIcon: Icon(icon, color: AppColors.primary),
 
         border: OutlineInputBorder(
-
           borderRadius: BorderRadius.circular(18),
 
           borderSide: BorderSide.none,
@@ -373,7 +306,6 @@ class _RegisterScreenState
   }
 
   Widget buildPasswordField({
-
     required TextEditingController controller,
 
     required String hint,
@@ -381,44 +313,32 @@ class _RegisterScreenState
     required bool isHidden,
 
     required VoidCallback onTap,
-
   }) {
-
     return TextField(
-
       controller: controller,
 
       obscureText: isHidden,
 
       decoration: InputDecoration(
-
         filled: true,
 
         fillColor: Colors.white,
 
         hintText: hint,
 
-        prefixIcon: const Icon(
-          Icons.lock,
-          color: AppColors.primary,
-        ),
+        prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
 
         suffixIcon: IconButton(
-
           onPressed: onTap,
 
           icon: Icon(
-
-            isHidden
-                ? Icons.visibility_off
-                : Icons.visibility,
+            isHidden ? Icons.visibility_off : Icons.visibility,
 
             color: Colors.grey,
           ),
         ),
 
         border: OutlineInputBorder(
-
           borderRadius: BorderRadius.circular(18),
 
           borderSide: BorderSide.none,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/event_model.dart';
+import '../../models/event_model.dart';
 
-import '../services/event_service.dart';
+import '../../services/event_service.dart';
 
-import '../theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 
 import 'event_details_screen.dart';
 

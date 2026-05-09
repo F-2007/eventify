@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 
 import 'home_screen.dart';
 import 'calendar_screen.dart';
 import 'tickets_screen.dart';
 import 'settings_screen.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class AttendeeMainScreen extends StatefulWidget {
+  const AttendeeMainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<AttendeeMainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<AttendeeMainScreen> {
 
   int currentIndex = 0;
 
