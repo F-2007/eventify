@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../models/event_model.dart';
-import '../models/ticket_model.dart';
+import '../../models/event_model.dart';
+import '../../models/ticket_model.dart';
 
-import '../services/ticket_service.dart';
+import '../../services/ticket_service.dart';
 
-import '../theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 
 class EventDetailsScreen extends StatelessWidget {
 
