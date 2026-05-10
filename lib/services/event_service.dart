@@ -1,68 +1,107 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_model.dart';
-import '../models/user_model.dart';
 
 class EventService {
-  /// Events List
-  static List<EventModel> events = [
-    EventModel(
-      id: "event-1",
+  static final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static final CollectionReference _eventsCollection =
+      _db.collection('events');
 
-      creatorId: "admin",
-
-      creatorRole: UserRole.admin,
-
-      title: "Tech Conference 2026",
-
-      location: "Cairo, Egypt",
-
-      description: "Join one of the biggest technology conferences in Egypt.",
-
-      dateTime: DateTime(2026, 5, 15, 10, 0),
-
-      price: 120,
-    ),
-
-    EventModel(
-      id: "event-2",
-
-      creatorId: "admin",
-
-      creatorRole: UserRole.admin,
-
-      title: "Music Festival",
-
-      location: "Giza, Egypt",
-
-      description: "Enjoy live music with your friends and favorite artists.",
-
-      dateTime: DateTime(2026, 5, 20, 19, 0),
-
-      price: 80,
-    ),
-  ];
-
-  /// Add Event
-  static void addEvent(EventModel event) {
-    events.add(event);
+  /// Add Event to Firestore
+  static Future<void> addEvent(EventModel event) async {
+    try {
+      await _eventsCollection.doc(event.id).set(event.toMap());
+      print(' Event added to Firestore: ${event.title}');
+    } catch (e) {
+      print(' Error adding event: $e');
+    }
   }
 
-  /// Delete Event
-  static void deleteEvent(int index) {
-    events.removeAt(index);
+  /// Get All Events from Firestore
+  static Future<List<EventModel>> getEvents() async {
+    try {
+      final snapshot =
+          await _eventsCollection.orderBy('dateTime', descending: false).get();
+      return snapshot.docs
+          .map((doc) =>
+              EventModel.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print(' Error getting events: $e');
+      return [];
+    }
   }
 
-  /// Delete Event By Id
-  static void deleteEventById(String id) {
-    events.removeWhere((event) => event.id == id);
+  /// Stream All Events (real-time updates)
+  static Stream<List<EventModel>> streamEvents() {
+    return _eventsCollection
+        .orderBy('dateTime', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) =>
+                EventModel.fromMap(doc.data() as Map<String, dynamic>))
+            .toList());
   }
 
-  /// Get Events By Creator
-  static List<EventModel> getEventsByCreator(String creatorId) {
-    return events.where((event) => event.creatorId == creatorId).toList();
+  /// Get Events By Creator from Firestore
+  static Future<List<EventModel>> getEventsByCreator(String creatorId) async {
+    try {
+      final snapshot = await _eventsCollection
+          .where('creatorId', isEqualTo: creatorId)
+          .get();
+      return snapshot.docs
+          .map((doc) =>
+              EventModel.fromMap(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print(' Error getting events by creator: $e');
+      return [];
+    }
   }
 
-  /// Get Events
-  static List<EventModel> getEvents() {
-    return events;
+  /// Stream Events By Creator (real-time updates)
+  static Stream<List<EventModel>> streamEventsByCreator(String creatorId) {
+    return _eventsCollection
+        .where('creatorId', isEqualTo: creatorId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) =>
+                EventModel.fromMap(doc.data() as Map<String, dynamic>))
+            .toList());
+  }
+
+  /// Get Single Event by ID
+  static Future<EventModel?> getEventById(String eventId) async {
+    try {
+      final doc = await _eventsCollection.doc(eventId).get();
+      if (doc.exists) {
+        return EventModel.fromMap(doc.data() as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      print(' Error getting event: $e');
+      return null;
+    }
+  }
+
+  /// Delete Event from Firestore
+  static Future<void> deleteEventById(String id) async {
+    try {
+      await _eventsCollection.doc(id).delete();
+      print(' Event deleted: $id');
+    } catch (e) {
+      print(' Error deleting event: $e');
+    }
+  }
+
+  /// Increment attendee count when a ticket is booked
+  static Future<void> incrementAttendeeCount(String eventId) async {
+    try {
+      await _eventsCollection.doc(eventId).update({
+        'attendeeCount': FieldValue.increment(1),
+      });
+      print(' Attendee count incremented for event: $eventId');
+    } catch (e) {
+      print(' Error incrementing attendee count: $e');
+    }
   }
 }

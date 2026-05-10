@@ -29,9 +29,6 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
   @override
   Widget build(BuildContext context) {
     final currentUser = AuthService.currentUser;
-    final events = currentUser == null
-        ? <EventModel>[]
-        : EventService.getEventsByCreator(currentUser.id);
 
     return Scaffold(
       appBar: AppBar(
@@ -40,8 +37,8 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           currentIndex == 0
               ? "My Events"
               : currentIndex == 2
-              ? "Attendees"
-              : "Analytics",
+                  ? "Attendees"
+                  : "Analytics",
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -51,7 +48,6 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           IconButton(
             onPressed: () {
               AuthService.logout();
-
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 '/login',
@@ -72,7 +68,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       body: IndexedStack(
         index: currentIndex == 1 ? 0 : currentIndex,
         children: [
-          buildMyEventsTab(events),
+          _buildMyEventsTab(currentUser?.id),
           const SizedBox.shrink(),
           const AttendeesScreen(),
           const AnalyticsScreen(),
@@ -102,7 +98,8 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
             icon: Icon(Icons.add_circle_outline),
             label: "Add Event",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Attendees"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.people), label: "Attendees"),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             label: "Analytics",
@@ -112,92 +109,124 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
     );
   }
 
-  Widget buildMyEventsTab(List<EventModel> events) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.secondary],
-              ),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Manage Your Events",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "Create events, review activity, and track your audience.",
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 25),
-          Row(
+  Widget _buildMyEventsTab(String? creatorId) {
+    if (creatorId == null) {
+      return const Center(child: Text("Not logged in"));
+    }
+
+    return StreamBuilder<List<EventModel>>(
+      stream: EventService.streamEventsByCreator(creatorId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        }
+
+        final events = snapshot.data ?? [];
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: buildStatCard(
-                  icon: Icons.event,
-                  title: "Events",
-                  value: events.length.toString(),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                  ),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Manage Your Events",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Create events, review activity, and track your audience.",
+                      style:
+                          TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: buildStatCard(
-                  icon: Icons.confirmation_num,
-                  title: "Tickets",
-                  value: "0",
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    child: buildStatCard(
+                      icon: Icons.event,
+                      title: "Events",
+                      value: events.length.toString(),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: _buildTicketStatCard(events),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              const Text(
+                "My Events",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
                 ),
               ),
+              const SizedBox(height: 15),
+              if (events.isEmpty)
+                buildEmptyState()
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    final event = events[index];
+
+                    return buildEventCard(
+                      event: event,
+                      onDelete: () async {
+                        await EventService.deleteEventById(event.id);
+                      },
+                    );
+                  },
+                ),
             ],
           ),
-          const SizedBox(height: 30),
-          const Text(
-            "My Events",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.dark,
-            ),
-          ),
-          const SizedBox(height: 15),
-          if (events.isEmpty)
-            buildEmptyState()
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
+        );
+      },
+    );
+  }
 
-                return buildEventCard(
-                  event: event,
-                  onDelete: () {
-                    setState(() {
-                      EventService.deleteEventById(event.id);
-                    });
-                  },
-                );
-              },
-            ),
-        ],
-      ),
+  /// Build ticket stat card — fetches count from Firestore
+  Widget _buildTicketStatCard(List<EventModel> events) {
+    if (events.isEmpty) {
+      return buildStatCard(
+        icon: Icons.confirmation_num,
+        title: "Tickets",
+        value: "0",
+      );
+    }
+
+    // Sum attendeeCount from all events as a quick ticket count
+    final totalTickets =
+        events.fold<int>(0, (sum, e) => sum + e.attendeeCount);
+    return buildStatCard(
+      icon: Icons.confirmation_num,
+      title: "Tickets",
+      value: totalTickets.toString(),
     );
   }
 
@@ -269,6 +298,15 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                 Text(
                   "${event.location} - ${EventDateFormatter.formatDate(event.dateTime)}",
                   style: const TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "${event.attendeeCount}/${event.capacity} attendees",
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
