@@ -6,6 +6,8 @@ import '../../services/event_service.dart';
 
 import '../../theme/app_colors.dart';
 
+import '../../widgets/event_card.dart';
+
 import 'event_details_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -13,39 +15,26 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    List<EventModel> events =
-    EventService.getEvents();
+    List<EventModel> events = EventService.getEvents();
 
     return Scaffold(
-
       appBar: AppBar(
-
         title: const Text(
-
           "Eventify",
 
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
 
       body: SingleChildScrollView(
-
         padding: const EdgeInsets.all(20),
 
         child: Column(
-
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             /// Welcome Text
             const Text(
-
               "Welcome Back 👋",
 
               style: TextStyle(
@@ -58,37 +47,25 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             const Text(
-
               "Discover amazing events around you",
 
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
 
             const SizedBox(height: 30),
 
             /// Search Bar
             Container(
-
-              padding:
-              const EdgeInsets.symmetric(
-                horizontal: 15,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
 
               decoration: BoxDecoration(
-
                 color: Colors.white,
 
-                borderRadius:
-                BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(15),
               ),
 
               child: const TextField(
-
                 decoration: InputDecoration(
-
                   border: InputBorder.none,
 
                   hintText: "Search events...",
@@ -102,7 +79,6 @@ class HomeScreen extends StatelessWidget {
 
             /// Upcoming Events
             const Text(
-
               "Upcoming Events",
 
               style: TextStyle(
@@ -116,158 +92,30 @@ class HomeScreen extends StatelessWidget {
 
             /// Dynamic Events
             ListView.builder(
-
               shrinkWrap: true,
 
-              physics:
-              const NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
 
               itemCount: events.length,
 
               itemBuilder: (context, index) {
-
                 final event = events[index];
 
-                return GestureDetector(
-
+                return EventCard(
+                  event: event,
                   onTap: () {
-
                     Navigator.push(
-
                       context,
 
                       MaterialPageRoute(
-
-                        builder: (_) =>
-
-                            EventDetailsScreen(
-                              event: event,
-                            ),
+                        builder: (_) => EventDetailsScreen(event: event),
                       ),
                     );
                   },
-
-                  child: Container(
-
-                    margin:
-                    const EdgeInsets.only(
-                      bottom: 20,
-                    ),
-
-                    width: double.infinity,
-
-                    padding:
-                    const EdgeInsets.all(20),
-
-                    decoration: BoxDecoration(
-
-                      gradient:
-                      const LinearGradient(
-
-                        colors: [
-                          AppColors.primary,
-                          AppColors.secondary,
-                        ],
-                      ),
-
-                      borderRadius:
-                      BorderRadius.circular(
-                          25),
-                    ),
-
-                    child: Column(
-
-                      crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
-
-                      children: [
-
-                        Text(
-
-                          event.title,
-
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight:
-                            FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        Row(
-
-                          children: [
-
-                            const Icon(
-                              Icons.calendar_month,
-                              color: Colors.white,
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            Text(
-
-                              event.date,
-
-                              style:
-                              const TextStyle(
-                                color:
-                                Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        Row(
-
-                          children: [
-
-                            const Icon(
-                              Icons.location_on,
-                              color: Colors.white,
-                            ),
-
-                            const SizedBox(width: 8),
-
-                            Text(
-
-                              event.location,
-
-                              style:
-                              const TextStyle(
-                                color:
-                                Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                 );
               },
             ),
           ],
-        ),
-      ),
-
-      floatingActionButton:
-      FloatingActionButton(
-
-        backgroundColor: AppColors.primary,
-
-        onPressed: () {
-
-        },
-
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
         ),
       ),
     );

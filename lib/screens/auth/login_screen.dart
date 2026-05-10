@@ -20,6 +20,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool isPasswordHidden = true;
 
+  /// Helper function to validate email format
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,9 +144,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   onPressed: () {
+                    final email = emailController.text.trim();
+                    final password = passwordController.text;
+
+                    // Validation checks
+                    if (email.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter your email")),
+                      );
+                      return;
+                    }
+
+                    if (!isValidEmail(email)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter a valid email")),
+                      );
+                      return;
+                    }
+
+                    if (password.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter your password")),
+                      );
+                      return;
+                    }
+
                     /// Admin Login
-                    if (emailController.text == "admin@eventify.com" &&
-                        passwordController.text == "admin@eventify.com") {
+                    if (email == "admin@eventify.com" &&
+                        password == "admin@eventify.com") {
+                      AuthService.loginAdmin();
+
                       Navigator.pushReplacementNamed(context, '/admin');
 
                       return;
@@ -149,9 +181,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     /// Normal User Login
                     bool success = AuthService.login(
-                      email: emailController.text,
+                      email: email,
 
-                      password: passwordController.text,
+                      password: password,
                     );
 
                     if (success) {

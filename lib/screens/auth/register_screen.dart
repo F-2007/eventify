@@ -30,6 +30,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   UserRole selectedRole = UserRole.attendee;
 
+  /// Helper function to validate email format
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,19 +212,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
 
                   onPressed: () {
-                    if (passwordController.text !=
-                        confirmPasswordController.text) {
+                    final name = nameController.text.trim();
+                    final email = emailController.text.trim();
+                    final password = passwordController.text;
+                    final confirmPassword = confirmPasswordController.text;
+
+                    // Validation checks
+                    if (name.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter your name")),
+                      );
+                      return;
+                    }
+
+                    if (email.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter your email")),
+                      );
+                      return;
+                    }
+
+                    if (!isValidEmail(email)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter a valid email")),
+                      );
+                      return;
+                    }
+
+                    if (password.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please enter a password")),
+                      );
+                      return;
+                    }
+
+                    if (password.length < 6) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Password must be at least 6 characters")),
+                      );
+                      return;
+                    }
+
+                    if (password != confirmPassword) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Passwords do not match")),
                       );
-
                       return;
                     }
 
                     AuthService.register(
-                      email: emailController.text,
+                      email: email,
 
-                      password: passwordController.text,
+                      password: password,
 
                       role: selectedRole,
                     );

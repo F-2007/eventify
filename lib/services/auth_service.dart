@@ -5,6 +5,8 @@ class AuthService {
 
   static String registeredPassword = "";
 
+  static String registeredUserId = "";
+
   static UserRole registeredRole = UserRole.attendee;
   // to store the current logged in user
   static UserModel? _currentUser;
@@ -18,6 +20,7 @@ class AuthService {
   }) {
     registeredEmail = email;
     registeredPassword = password;
+    registeredUserId = email;
     registeredRole = role;
 
     return true;
@@ -27,7 +30,7 @@ class AuthService {
     if (email == registeredEmail && password == registeredPassword) {
       // Create user
       _currentUser = UserModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: registeredUserId,
         name: email.split('@')[0],
         email: email,
         role: registeredRole,
@@ -36,6 +39,16 @@ class AuthService {
       return true;
     }
     return false;
+  }
+
+  static void loginAdmin() {
+    _currentUser = UserModel(
+      id: "admin",
+      name: "Admin",
+      email: "admin@eventify.com",
+      role: UserRole.admin,
+      createdAt: DateTime.now(),
+    );
   }
 
   static void setUserRole(UserRole role) {

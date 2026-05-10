@@ -4,6 +4,9 @@ import '../../models/event_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/event_service.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/event_date_formatter.dart';
+import 'analytics_screen.dart';
+import 'attendees_screen.dart';
 
 class MyEventsScreen extends StatefulWidget {
   const MyEventsScreen({super.key});
@@ -13,15 +16,36 @@ class MyEventsScreen extends StatefulWidget {
 }
 
 class _MyEventsScreenState extends State<MyEventsScreen> {
+  int currentIndex = 0;
+
+  Future<void> openAddEventScreen() async {
+    await Navigator.pushNamed(context, '/add-event');
+
+    setState(() {
+      currentIndex = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final events = EventService.getEvents();
+    final currentUser = AuthService.currentUser;
+    final events = currentUser == null
+        ? <EventModel>[]
+        : EventService.getEventsByCreator(currentUser.id);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Organizer Dashboard",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        automaticallyImplyLeading: false,
+        title: Text(
+          currentIndex == 0
+              ? "My Events"
+              : currentIndex == 2
+              ? "Attendees"
+              : "Analytics",
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
@@ -38,146 +62,141 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () async {
-          await Navigator.pushNamed(context, '/add-event');
-
-          setState(() {});
-        },
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: currentIndex == 0
+          ? FloatingActionButton(
+              backgroundColor: AppColors.primary,
+              onPressed: openAddEventScreen,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
+      body: IndexedStack(
+        index: currentIndex == 1 ? 0 : currentIndex,
+        children: [
+          buildMyEventsTab(events),
+          const SizedBox.shrink(),
+          const AttendeesScreen(),
+          const AnalyticsScreen(),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.secondary],
-                ),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Manage Your Events",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    "Create events, review activity, and track your audience.",
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
-            Row(
-              children: [
-                Expanded(
-                  child: buildStatCard(
-                    icon: Icons.event,
-                    title: "Events",
-                    value: events.length.toString(),
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: buildStatCard(
-                    icon: Icons.confirmation_num,
-                    title: "Tickets",
-                    value: "0",
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-            Row(
-              children: [
-                Expanded(
-                  child: buildActionButton(
-                    icon: Icons.add_circle_outline,
-                    title: "Add Event",
-                    onTap: () async {
-                      await Navigator.pushNamed(context, '/add-event');
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) {
+          if (index == 1) {
+            openAddEventScreen();
+            return;
+          }
 
-                      setState(() {});
-                    },
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: buildActionButton(
-                    icon: Icons.bar_chart,
-                    title: "Analytics",
-                    onTap: () {
-                      showComingSoon("Analytics");
-                    },
-                  ),
-                ),
-              ],
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt),
+            label: "My Events",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            label: "Add Event",
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Attendees"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart),
+            label: "Analytics",
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildMyEventsTab(List<EventModel> events) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.primary, AppColors.secondary],
+              ),
+              borderRadius: BorderRadius.circular(25),
             ),
-            const SizedBox(height: 15),
-            Row(
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: buildActionButton(
-                    icon: Icons.people,
-                    title: "Attendees",
-                    onTap: () {
-                      showComingSoon("Attendees");
-                    },
+                Text(
+                  "Manage Your Events",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: buildActionButton(
-                    icon: Icons.list_alt,
-                    title: "My Events",
-                    onTap: () {},
-                  ),
+                SizedBox(height: 8),
+                Text(
+                  "Create events, review activity, and track your audience.",
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ],
             ),
-            const SizedBox(height: 30),
-            const Text(
-              "My Events",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.dark,
+          ),
+          const SizedBox(height: 25),
+          Row(
+            children: [
+              Expanded(
+                child: buildStatCard(
+                  icon: Icons.event,
+                  title: "Events",
+                  value: events.length.toString(),
+                ),
               ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: buildStatCard(
+                  icon: Icons.confirmation_num,
+                  title: "Tickets",
+                  value: "0",
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+          const Text(
+            "My Events",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.dark,
             ),
-            const SizedBox(height: 15),
-            if (events.isEmpty)
-              buildEmptyState()
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  return buildEventCard(
-                    event: events[index],
-                    onDelete: () {
-                      setState(() {
-                        EventService.deleteEvent(index);
-                      });
-                    },
-                  );
-                },
-              ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 15),
+          if (events.isEmpty)
+            buildEmptyState()
+          else
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: events.length,
+              itemBuilder: (context, index) {
+                final event = events[index];
+
+                return buildEventCard(
+                  event: event,
+                  onDelete: () {
+                    setState(() {
+                      EventService.deleteEventById(event.id);
+                    });
+                  },
+                );
+              },
+            ),
+        ],
       ),
     );
   }
@@ -207,37 +226,6 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           ),
           Text(title, style: const TextStyle(color: Colors.grey)),
         ],
-      ),
-    );
-  }
-
-  Widget buildActionButton({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 30),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.dark,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -279,7 +267,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  "${event.location} - ${event.date}",
+                  "${event.location} - ${EventDateFormatter.formatDate(event.dateTime)}",
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -317,11 +305,5 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
         ],
       ),
     );
-  }
-
-  void showComingSoon(String feature) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("$feature coming soon")));
   }
 }
