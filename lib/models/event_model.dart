@@ -43,6 +43,7 @@ class EventModel {
       'dateTime': dateTime,
       'price': price,
       'creatorId': creatorId,
+      'creatorRole': creatorRole?.name,
       'capacity': capacity,
       'attendeeCount': attendeeCount,
       'createdAt': createdAt,
@@ -51,6 +52,15 @@ class EventModel {
 
   /// Create event from Firestore data
   factory EventModel.fromMap(Map<String, dynamic> map) {
+    UserRole? role;
+    if (map['creatorRole'] != null) {
+      try {
+        role = UserRole.values.byName(map['creatorRole']);
+      } catch (_) {
+        role = null;
+      }
+    }
+
     return EventModel(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
@@ -59,9 +69,39 @@ class EventModel {
       dateTime: (map['dateTime'] as dynamic)?.toDate() ?? DateTime.now(),
       price: (map['price'] ?? 0).toDouble(),
       creatorId: map['creatorId'] ?? '',
+      creatorRole: role,
       capacity: map['capacity'] ?? 100,
       attendeeCount: map['attendeeCount'] ?? 0,
       createdAt: (map['createdAt'] as dynamic)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  /// Create a copy with updated fields
+  EventModel copyWith({
+    String? id,
+    String? title,
+    String? location,
+    String? description,
+    DateTime? dateTime,
+    double? price,
+    String? creatorId,
+    UserRole? creatorRole,
+    int? capacity,
+    int? attendeeCount,
+    DateTime? createdAt,
+  }) {
+    return EventModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      location: location ?? this.location,
+      description: description ?? this.description,
+      dateTime: dateTime ?? this.dateTime,
+      price: price ?? this.price,
+      creatorId: creatorId ?? this.creatorId,
+      creatorRole: creatorRole ?? this.creatorRole,
+      capacity: capacity ?? this.capacity,
+      attendeeCount: attendeeCount ?? this.attendeeCount,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

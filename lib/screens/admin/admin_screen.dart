@@ -81,160 +81,197 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   Widget buildDashboardTab() {
-    final events = EventService.getEvents();
-    final tickets = TicketService.getTickets();
+    return StreamBuilder<List<EventModel>>(
+      stream: EventService.streamEvents(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(25),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.secondary],
-              ),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome Admin",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+        final events = snapshot.data ?? [];
+
+        return FutureBuilder<int>(
+          future: _getTotalTickets(),
+          builder: (context, ticketSnapshot) {
+            final ticketCount = ticketSnapshot.data ?? 0;
+            final totalRevenue = events.fold<double>(
+              0,
+              (sum, e) => sum + (e.attendeeCount * e.price),
+            );
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.secondary],
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Welcome Admin",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          "Manage all events and system activity.",
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  "Manage all events and system activity.",
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 35),
-          const Text(
-            "Statistics",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.dark,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: buildStatCard(
-                  title: "Events",
-                  value: events.length.toString(),
-                  icon: Icons.event,
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: buildStatCard(
-                  title: "Tickets",
-                  value: tickets.length.toString(),
-                  icon: Icons.confirmation_num,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Expanded(
-                child: buildStatCard(
-                  title: "Users",
-                  value: "--",
-                  icon: Icons.people,
-                ),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: buildStatCard(
-                  title: "Revenue",
-                  value: "--",
-                  icon: Icons.attach_money,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 35),
-          const Text(
-            "Recent Events",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.dark,
-            ),
-          ),
-          const SizedBox(height: 20),
-          if (events.isEmpty)
-            const Text("No events yet")
-          else
-            ...events
-                .take(3)
-                .map(
-                  (event) => buildEventCard(
-                    event: event,
-                    onDelete: () {
-                      setState(() {
-                        EventService.deleteEventById(event.id);
-                      });
-                    },
+                  const SizedBox(height: 35),
+                  const Text(
+                    "Statistics",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.dark,
+                    ),
                   ),
-                ),
-        ],
-      ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildStatCard(
+                          title: "Events",
+                          value: events.length.toString(),
+                          icon: Icons.event,
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: buildStatCard(
+                          title: "Tickets",
+                          value: ticketCount.toString(),
+                          icon: Icons.confirmation_num,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: buildStatCard(
+                          title: "Attendees",
+                          value: events
+                              .fold<int>(
+                                  0, (sum, e) => sum + e.attendeeCount)
+                              .toString(),
+                          icon: Icons.people,
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      Expanded(
+                        child: buildStatCard(
+                          title: "Revenue",
+                          value:
+                              "\$${totalRevenue.toStringAsFixed(0)}",
+                          icon: Icons.attach_money,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 35),
+                  const Text(
+                    "Recent Events",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.dark,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (events.isEmpty)
+                    const Text("No events yet")
+                  else
+                    ...events.take(3).map(
+                          (event) => buildEventCard(
+                            event: event,
+                            onDelete: () async {
+                              await EventService.deleteEventById(
+                                  event.id);
+                            },
+                          ),
+                        ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
+  Future<int> _getTotalTickets() async {
+    final tickets = await TicketService.getTickets();
+    return tickets.length;
+  }
+
   Widget buildEventsTab() {
-    final events = EventService.getEvents();
+    return StreamBuilder<List<EventModel>>(
+      stream: EventService.streamEvents(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "All Events",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.dark,
-            ),
-          ),
-          const SizedBox(height: 15),
-          if (events.isEmpty)
-            const Text("No events yet")
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: events.length,
-              itemBuilder: (context, index) {
-                final event = events[index];
+        final events = snapshot.data ?? [];
 
-                return buildEventCard(
-                  event: event,
-                  onDelete: () {
-                    setState(() {
-                      EventService.deleteEventById(event.id);
-                    });
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "All Events",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.dark,
+                ),
+              ),
+              const SizedBox(height: 15),
+              if (events.isEmpty)
+                const Text("No events yet")
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    final event = events[index];
+
+                    return buildEventCard(
+                      event: event,
+                      onDelete: () async {
+                        await EventService.deleteEventById(event.id);
+                      },
+                    );
                   },
-                );
-              },
-            ),
-        ],
-      ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -270,7 +307,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  "Admin tools for users, payments, and moderation will expand after Firebase is connected.",
+                  "Full system control with Firestore connected. Manage events, users, and monitor activity.",
                   style: TextStyle(color: Colors.grey, height: 1.5),
                 ),
               ],
@@ -330,7 +367,8 @@ class _AdminScreenState extends State<AdminScreen> {
             ),
           ),
           const SizedBox(height: 5),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 15)),
+          Text(title,
+              style: const TextStyle(color: Colors.grey, fontSize: 15)),
         ],
       ),
     );
@@ -381,12 +419,24 @@ class _AdminScreenState extends State<AdminScreen> {
                   style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 5),
-                Text(
-                  creatorLabel,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 12,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      creatorLabel,
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "${event.attendeeCount}/${event.capacity}",
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

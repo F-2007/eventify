@@ -50,6 +50,12 @@ dependencies:
   
   # UUID for unique IDs
   uuid: ^4.0.0
+  
+  # QR Code scanning
+  mobile_scanner: ^6.0.2
+  
+  # Charts for analytics
+  fl_chart: ^0.70.2
 
 dev_dependencies:
   flutter_test:

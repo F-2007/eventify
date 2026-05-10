@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../theme/app_colors.dart';
-
 import '../../services/auth_service.dart';
-
+import '../../services/firebase_auth_service.dart';
 import '../../models/user_model.dart';
 import '../../widgets/role_card.dart';
 
@@ -16,23 +16,137 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController nameController = TextEditingController();
-
   final TextEditingController emailController = TextEditingController();
-
   final TextEditingController passwordController = TextEditingController();
-
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
   bool isPasswordHidden = true;
-
   bool isConfirmPasswordHidden = true;
-
+  bool _isLoading = false;
   UserRole selectedRole = UserRole.attendee;
 
   /// Helper function to validate email format
   bool isValidEmail(String email) {
     return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email);
+  }
+
+  Future<void> _register() async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    final confirmPassword = confirmPasswordController.text;
+
+    // Validation checks
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your name")),
+      );
+      return;
+    }
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your email")),
+      );
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid email")),
+      );
+      return;
+    }
+
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a password")),
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Password must be at least 6 characters")),
+      );
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwords do not match")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Register with Firebase Auth
+      bool success = await FirebaseAuthService.register(
+        email: email,
+        password: password,
+        name: name,
+        role: selectedRole,
+      );
+
+      if (success) {
+        // Save user profile to Firestore
+        final user = FirebaseAuthService.getCurrentUser();
+        if (user != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'id': user.uid,
+            'name': name,
+            'email': email,
+            'role': selectedRole.name,
+            'createdAt': DateTime.now().toIso8601String(),
+          });
+        }
+
+        // Also register locally for role-based navigation
+        AuthService.register(
+          email: email,
+          password: password,
+          role: selectedRole,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Account Created Successfully! 🎉"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  "Registration failed. Email may already be in use."),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -41,10 +155,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(25),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
               const SizedBox(height: 30),
 
@@ -53,7 +165,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-
                 icon: const Icon(Icons.arrow_back_ios),
               ),
 
@@ -64,16 +175,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Container(
                   width: 110,
                   height: 110,
-
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppColors.primary, AppColors.secondary],
                     ),
-
                     borderRadius: BorderRadius.circular(30),
                   ),
-
-                  child: const Icon(Icons.event, color: Colors.white, size: 60),
+                  child: const Icon(Icons.event,
+                      color: Colors.white, size: 60),
                 ),
               ),
 
@@ -82,7 +191,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Header
               const Text(
                 "Create Account 🚀",
-
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -94,7 +202,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const Text(
                 "Join Eventify and explore events",
-
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
 
@@ -103,9 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Full Name
               buildTextField(
                 controller: nameController,
-
                 hint: "Full Name",
-
                 icon: Icons.person,
               ),
 
@@ -114,9 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Email
               buildTextField(
                 controller: emailController,
-
                 hint: "Email Address",
-
                 icon: Icons.email,
               ),
 
@@ -125,11 +228,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Password
               buildPasswordField(
                 controller: passwordController,
-
                 hint: "Password",
-
                 isHidden: isPasswordHidden,
-
                 onTap: () {
                   setState(() {
                     isPasswordHidden = !isPasswordHidden;
@@ -142,11 +242,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Confirm Password
               buildPasswordField(
                 controller: confirmPasswordController,
-
                 hint: "Confirm Password",
-
                 isHidden: isConfirmPasswordHidden,
-
                 onTap: () {
                   setState(() {
                     isConfirmPasswordHidden = !isConfirmPasswordHidden;
@@ -158,7 +255,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               const Text(
                 "Account Type",
-
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -199,93 +295,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Register Button
               SizedBox(
                 width: double.infinity,
-
                 height: 60,
-
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-
-                  onPressed: () {
-                    final name = nameController.text.trim();
-                    final email = emailController.text.trim();
-                    final password = passwordController.text;
-                    final confirmPassword = confirmPasswordController.text;
-
-                    // Validation checks
-                    if (name.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please enter your name")),
-                      );
-                      return;
-                    }
-
-                    if (email.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please enter your email")),
-                      );
-                      return;
-                    }
-
-                    if (!isValidEmail(email)) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please enter a valid email")),
-                      );
-                      return;
-                    }
-
-                    if (password.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please enter a password")),
-                      );
-                      return;
-                    }
-
-                    if (password.length < 6) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Password must be at least 6 characters")),
-                      );
-                      return;
-                    }
-
-                    if (password != confirmPassword) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Passwords do not match")),
-                      );
-                      return;
-                    }
-
-                    AuthService.register(
-                      email: email,
-
-                      password: password,
-
-                      role: selectedRole,
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Account Created Successfully"),
-                      ),
-                    );
-
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-
-                  child: const Text(
-                    "Create Account",
-
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  onPressed: _isLoading ? null : _register,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          "Create Account",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
 
@@ -294,18 +329,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               /// Login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-
                 children: [
                   const Text("Already have an account?"),
-
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, '/login');
                     },
-
                     child: const Text(
                       "Login",
-
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -323,26 +354,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget buildTextField({
     required TextEditingController controller,
-
     required String hint,
-
     required IconData icon,
   }) {
     return TextField(
       controller: controller,
-
       decoration: InputDecoration(
         filled: true,
-
         fillColor: Colors.white,
-
         hintText: hint,
-
         prefixIcon: Icon(icon, color: AppColors.primary),
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-
           borderSide: BorderSide.none,
         ),
       ),
@@ -351,40 +374,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget buildPasswordField({
     required TextEditingController controller,
-
     required String hint,
-
     required bool isHidden,
-
     required VoidCallback onTap,
   }) {
     return TextField(
       controller: controller,
-
       obscureText: isHidden,
-
       decoration: InputDecoration(
         filled: true,
-
         fillColor: Colors.white,
-
         hintText: hint,
-
         prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
-
         suffixIcon: IconButton(
           onPressed: onTap,
-
           icon: Icon(
             isHidden ? Icons.visibility_off : Icons.visibility,
-
             color: Colors.grey,
           ),
         ),
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-
           borderSide: BorderSide.none,
         ),
       ),

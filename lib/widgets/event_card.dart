@@ -98,6 +98,42 @@ class EventCard extends StatelessWidget {
                   icon: Icons.access_time,
                   label: EventDateFormatter.formatTime(event.dateTime),
                 ),
+                const SizedBox(width: 10),
+                /// Available seats badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: event.isFull
+                        ? Colors.red.withValues(alpha: 0.1)
+                        : Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        event.isFull ? Icons.block : Icons.event_seat,
+                        size: 14,
+                        color: event.isFull ? Colors.red : Colors.green,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        event.isFull
+                            ? "Sold Out"
+                            : "${event.availableSeats} left",
+                        style: TextStyle(
+                          color:
+                              event.isFull ? Colors.red : Colors.green,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],

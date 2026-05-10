@@ -7,13 +7,13 @@ class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     return const FirebaseOptions(
       // Get these from Firebase Console > Project Settings
-      apiKey: "AIzaSyDummyKeyReplaceWithYours",
-      appId: "1:123456789:android:dummyIdReplaceWithYours",
-      messagingSenderId: "123456789",
-      projectId: "eventify-app",
-      storageBucket: "eventify-app.appspot.com",
-      iosBundleId: "com.example.eventify",
-      androidClientId: "com.example.eventify",
+      apiKey: "AIzaSyDHUlksyuJ8BDlJR7EYoBj2pB_O0UmPXwc",
+      appId: "1:968279367460:android:25d47d233ed7b2637a9db1",
+      messagingSenderId: "968279367460",
+      projectId: "eventify-app-67224",
+      storageBucket: "eventify-app-67224.firebasestorage.app",
+      //iosBundleId: "com.example.eventify",
+      //androidClientId: "com.example.eventify",
     );
   }
 }
