@@ -7,52 +7,34 @@ import '../../services/ticket_service.dart';
 
 import '../../theme/app_colors.dart';
 
-class EventDetailsScreen extends StatelessWidget {
+import '../../utils/event_date_formatter.dart';
 
+class EventDetailsScreen extends StatelessWidget {
   final EventModel event;
 
-  const EventDetailsScreen({
-
-    super.key,
-
-    required this.event,
-  });
+  const EventDetailsScreen({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       backgroundColor: AppColors.background,
 
       body: SingleChildScrollView(
-
         child: Column(
-
-          crossAxisAlignment:
-          CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             /// Event Header
             Stack(
-
               children: [
-
                 Container(
-
                   height: 320,
 
                   width: double.infinity,
 
                   decoration: const BoxDecoration(
-
                     gradient: LinearGradient(
-
-                      colors: [
-                        AppColors.primary,
-                        AppColors.secondary,
-                      ],
+                      colors: [AppColors.primary, AppColors.secondary],
 
                       begin: Alignment.topLeft,
 
@@ -61,40 +43,23 @@ class EventDetailsScreen extends StatelessWidget {
                   ),
 
                   child: const Center(
-
-                    child: Icon(
-
-                      Icons.event,
-
-                      size: 120,
-
-                      color: Colors.white,
-                    ),
+                    child: Icon(Icons.event, size: 120, color: Colors.white),
                   ),
                 ),
 
                 Positioned(
-
                   top: 50,
                   left: 20,
 
                   child: CircleAvatar(
-
-                    backgroundColor:
-                    Colors.white,
+                    backgroundColor: Colors.white,
 
                     child: IconButton(
-
                       onPressed: () {
-
                         Navigator.pop(context);
-
                       },
 
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: AppColors.dark,
-                      ),
+                      icon: const Icon(Icons.arrow_back, color: AppColors.dark),
                     ),
                   ),
                 ),
@@ -103,25 +68,19 @@ class EventDetailsScreen extends StatelessWidget {
 
             /// Content
             Padding(
-
               padding: const EdgeInsets.all(25),
 
               child: Column(
-
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   /// Title
                   Text(
-
                     event.title,
 
                     style: const TextStyle(
                       fontSize: 32,
-                      fontWeight:
-                      FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.dark,
                     ),
                   ),
@@ -130,9 +89,7 @@ class EventDetailsScreen extends StatelessWidget {
 
                   /// Date
                   Row(
-
                     children: [
-
                       const Icon(
                         Icons.calendar_month,
                         color: AppColors.primary,
@@ -141,8 +98,7 @@ class EventDetailsScreen extends StatelessWidget {
                       const SizedBox(width: 10),
 
                       Text(
-
-                        event.date,
+                        EventDateFormatter.formatDate(event.dateTime),
 
                         style: const TextStyle(
                           fontSize: 16,
@@ -156,18 +112,12 @@ class EventDetailsScreen extends StatelessWidget {
 
                   /// Location
                   Row(
-
                     children: [
-
-                      const Icon(
-                        Icons.location_on,
-                        color: AppColors.primary,
-                      ),
+                      const Icon(Icons.location_on, color: AppColors.primary),
 
                       const SizedBox(width: 10),
 
                       Text(
-
                         event.location,
 
                         style: const TextStyle(
@@ -182,19 +132,13 @@ class EventDetailsScreen extends StatelessWidget {
 
                   /// Time
                   Row(
-
                     children: [
-
-                      const Icon(
-                        Icons.access_time,
-                        color: AppColors.primary,
-                      ),
+                      const Icon(Icons.access_time, color: AppColors.primary),
 
                       const SizedBox(width: 10),
 
                       Text(
-
-                        event.time,
+                        EventDateFormatter.formatTime(event.dateTime),
 
                         style: const TextStyle(
                           fontSize: 16,
@@ -208,13 +152,11 @@ class EventDetailsScreen extends StatelessWidget {
 
                   /// About Event
                   const Text(
-
                     "About Event",
 
                     style: TextStyle(
                       fontSize: 24,
-                      fontWeight:
-                      FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.dark,
                     ),
                   ),
@@ -222,7 +164,6 @@ class EventDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 15),
 
                   Text(
-
                     event.description,
 
                     style: const TextStyle(
@@ -236,101 +177,62 @@ class EventDetailsScreen extends StatelessWidget {
 
                   /// Price Card
                   Container(
-
-                    padding:
-                    const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
 
                     decoration: BoxDecoration(
-
                       color: Colors.white,
 
-                      borderRadius:
-                      BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(25),
                     ),
 
                     child: Row(
-
-                      mainAxisAlignment:
-                      MainAxisAlignment
-                          .spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                       children: [
-
                         Column(
-
-                          crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
 
                           children: [
-
                             const Text(
-
                               "Ticket Price",
 
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
+                              style: TextStyle(color: Colors.grey),
                             ),
 
                             const SizedBox(height: 5),
 
                             Text(
-
                               "\$${event.price}",
 
                               style: const TextStyle(
                                 fontSize: 28,
-                                fontWeight:
-                                FontWeight.bold,
-                                color:
-                                AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
                               ),
                             ),
                           ],
                         ),
 
                         SizedBox(
-
                           width: 160,
                           height: 55,
 
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
 
-                            style:
-                            ElevatedButton
-                                .styleFrom(
-
-                              backgroundColor:
-                              AppColors.primary,
-
-                              shape:
-                              RoundedRectangleBorder(
-
-                                borderRadius:
-                                BorderRadius
-                                    .circular(
-                                    18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
                               ),
                             ),
 
                             onPressed: () {
+                              TicketModel ticket = TicketModel(event: event);
 
-                              TicketModel ticket =
-                              TicketModel(
-                                event: event,
-                              );
+                              TicketService.addTicket(ticket);
 
-                              TicketService.addTicket(
-                                ticket,
-                              );
-
-                              ScaffoldMessenger.of(
-                                  context)
-                                  .showSnackBar(
-
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-
                                   content: Text(
                                     "${event.title} Booked Successfully 🎉",
                                   ),
@@ -339,15 +241,12 @@ class EventDetailsScreen extends StatelessWidget {
                             },
 
                             child: const Text(
-
                               "Book Now",
 
                               style: TextStyle(
-                                color:
-                                Colors.white,
+                                color: Colors.white,
                                 fontSize: 17,
-                                fontWeight:
-                                FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
