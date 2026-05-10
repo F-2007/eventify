@@ -8,8 +8,19 @@ import 'screens/organizer/add_event_screen.dart';
 import 'screens/organizer/my_events_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
+import 'services/firebase_service.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
+  // Required for Firebase initialization
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
+  await FirebaseService.initialize();
+
+  // Initialize Notifications
+  await NotificationService.initialize();
+
   runApp(const EventifyApp());
 }
 

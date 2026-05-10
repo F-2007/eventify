@@ -340,7 +340,7 @@ class _AdminScreenState extends State<AdminScreen> {
     required EventModel event,
     required VoidCallback onDelete,
   }) {
-    final creatorLabel = event.creatorRole.name == "admin"
+    final creatorLabel = event.creatorRole?.name == "admin"
         ? "System event"
         : "Organizer event";
 
