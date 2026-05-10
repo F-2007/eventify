@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../models/event_model.dart';
 import '../../models/ticket_model.dart';
 
+import '../../services/firebase_auth_service.dart';
 import '../../services/ticket_service.dart';
-
 import '../../theme/app_colors.dart';
 
 import '../../utils/event_date_formatter.dart';
 
 class EventDetailsScreen extends StatelessWidget {
   final EventModel event;
-
-  const EventDetailsScreen({super.key, required this.event});
+  final uuid = Uuid ();
+  EventDetailsScreen({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -227,14 +228,21 @@ class EventDetailsScreen extends StatelessWidget {
                             ),
 
                             onPressed: () {
-                              TicketModel ticket = TicketModel(event: event);
+                              String userId = FirebaseAuthService.getCurrentUser()?.uid ?? '';
+                              TicketModel ticket = TicketModel(
+                                id: uuid.v4(),
+                                event: event,
+                                userId: userId,
+                                qrCode: uuid.v4(),
+                                purchaseDate: DateTime.now()
+                              );
 
                               TicketService.addTicket(ticket);
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    "${event.title} Booked Successfully 🎉",
+                                    "${event.title} Booked Successfully",
                                   ),
                                 ),
                               );
