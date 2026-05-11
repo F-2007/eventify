@@ -6,7 +6,7 @@ import 'package:timezone/timezone.dart' as tz_util;
 /// Handles both local and push notifications
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   /// Initialize notifications
   /// Call this in main() after Firebase is initialized
@@ -16,11 +16,11 @@ class NotificationService {
 
     // Android settings
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    AndroidInitializationSettings('@mipmap/ic_launcher');
 
     // iOS settings
     const DarwinInitializationSettings iOSSettings =
-        DarwinInitializationSettings();
+    DarwinInitializationSettings();
 
     // Combine settings
     const InitializationSettings initSettings = InitializationSettings(
@@ -64,7 +64,7 @@ class NotificationService {
     required String body,
   }) async {
     const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
+    AndroidNotificationDetails(
       'eventify_channel', // Channel ID
       'Event Notifications', // Channel name
       channelDescription: 'Notifications for events and reminders',
@@ -111,7 +111,7 @@ class NotificationService {
   }) async {
     try {
       const AndroidNotificationDetails androidDetails =
-          AndroidNotificationDetails(
+      AndroidNotificationDetails(
         'eventify_reminders_channel',
         'Event Reminders',
         channelDescription: 'Scheduled reminders for upcoming events',
@@ -132,7 +132,7 @@ class NotificationService {
 
       // Convert to timezone-aware datetime
       final tz_util.TZDateTime tzDateTime =
-          tz_util.TZDateTime.from(scheduledTime, tz_util.local);
+      tz_util.TZDateTime.from(scheduledTime, tz_util.local);
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         DateTime.now().millisecond,
@@ -141,8 +141,9 @@ class NotificationService {
         tzDateTime,
         details,
         uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dateAndTime,
+        androidScheduleMode: AndroidScheduleMode.inexact, // ADDED THIS LINE
       );
 
       print(
