@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'theme/app_colors.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'screens/admin/admin_screen.dart';
 import 'screens/attendee/attendee_main_screen.dart';
 import 'screens/organizer/add_event_screen.dart';
@@ -10,6 +11,9 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'services/firebase_service.dart';
 import 'services/notification_service.dart';
+import 'services/firebase_auth_service.dart';
+import 'services/auth_service.dart';
+import 'models/user_model.dart';
 
 void main() async {
   // Required for Firebase initialization
