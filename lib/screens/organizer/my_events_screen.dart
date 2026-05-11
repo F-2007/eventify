@@ -7,6 +7,7 @@ import '../../theme/app_colors.dart';
 import '../../utils/event_date_formatter.dart';
 import 'analytics_screen.dart';
 import 'attendees_screen.dart';
+import 'qr_scanner_screen.dart';
 
 class MyEventsScreen extends StatefulWidget {
   const MyEventsScreen({super.key});
@@ -45,6 +46,16 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QRScannerScreen()),
+              );
+            },
+            icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
+            tooltip: 'Scan QR Code',
+          ),
           IconButton(
             onPressed: () {
               AuthService.logout();

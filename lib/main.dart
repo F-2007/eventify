@@ -21,11 +21,54 @@ void main() async {
   // Initialize Notifications
   await NotificationService.initialize();
 
-  runApp(const EventifyApp());
+  // Check for existing session
+  final currentUser = FirebaseAuthService.getCurrentUser();
+  String initialRoute = '/login';
+
+  if (currentUser != null) {
+    try {
+      // Fetch user role from Firestore to populate AuthService
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data()!;
+        final roleStr = data['role'] ?? 'attendee';
+        final role = UserRole.values.byName(roleStr);
+
+        // Populate mock AuthService so existing code still works
+        AuthService.register(
+          email: currentUser.email ?? '',
+          password: '', // Password not needed for existing session
+          role: role,
+        );
+        AuthService.login(
+          email: currentUser.email ?? '',
+          password: '',
+        );
+
+        // Set initial route based on role
+        if (role == UserRole.admin) {
+          initialRoute = '/admin';
+        } else if (role == UserRole.organizer) {
+          initialRoute = '/organizer';
+        } else {
+          initialRoute = '/attendee';
+        }
+      }
+    } catch (e) {
+      print(' Session restoration error: $e');
+    }
+  }
+
+  runApp(EventifyApp(initialRoute: initialRoute));
 }
 
 class EventifyApp extends StatelessWidget {
-  const EventifyApp({super.key});
+  final String initialRoute;
+  const EventifyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +101,7 @@ class EventifyApp extends StatelessWidget {
         ),
       ),
 
-      initialRoute: '/login',
+      initialRoute: initialRoute,
 
       routes: {
         '/login': (context) => const LoginScreen(),
