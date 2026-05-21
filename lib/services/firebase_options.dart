@@ -7,11 +7,16 @@ class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     return const FirebaseOptions(
       // Get these from Firebase Console > Project Settings
-      apiKey: "AIzaSyDHUlksyuJ8BDlJR7EYoBj2pB_O0UmPXwc",
-      appId: "1:968279367460:android:25d47d233ed7b2637a9db1",
-      messagingSenderId: "968279367460",
-      projectId: "eventify-app-67224",
-      storageBucket: "eventify-app-67224.firebasestorage.app",
+      //add your api key
+      apiKey: "",
+      // add your appId
+      appId: "",
+      //add your messagingSenderId
+      messagingSenderId: "",
+      // add your projectId
+      projectId: "",
+      // add your storageBucke
+      storageBucket: "",
       //iosBundleId: "com.example.eventify",
       //androidClientId: "com.example.eventify",
     );
