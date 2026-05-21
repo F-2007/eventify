@@ -31,4 +31,4 @@ class DefaultFirebaseOptions {
 /// 5. Replace the dummy values above
 ///
 /// IMPORTANT: Never commit real credentials to public repositories
-/// In production, use environment files or Firebase CLI
+
